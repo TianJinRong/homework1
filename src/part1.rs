@@ -325,3 +325,16 @@ fn test_concat_even_fibonaccis() {
     assert_eq!(&concat_even_fibonaccis(6), "28");
     assert_eq!(&concat_even_fibonaccis(9), "2834");
 }
+
+
+pub fn if_expr(b: bool) -> i32 {
+    let x: i32 = if b {5} else {10};
+    let y = 3;
+    if b {6} else {11};
+    return x;
+}
+#[test]
+fn test_if_expr() {
+    assert_eq!(if_expr(true), 5);
+    assert_eq!(if_expr(false), 10);
+}

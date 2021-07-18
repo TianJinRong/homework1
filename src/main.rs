@@ -1,6 +1,6 @@
-pub mod part1;
+// pub mod part1;
 // Uncomment these to have Rust compile the other files as well.
-// pub mod part2;
+pub mod part2;
 // pub mod part3;
 
 fn main() {

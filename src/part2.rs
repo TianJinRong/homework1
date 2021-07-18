@@ -23,23 +23,32 @@ use std::io::Read;
 */
 
 // split_ref must have the return type Vec<&str>
+fn split_ref(input: &str) -> Vec<&str> {
+    input.split(" ").collect()
+}
+
+#[test]
+fn test_split_ref(){
+    let string = "Hello World!".to_string();
+    assert_eq!(split_ref(& string), ["Hello", "World!"]);
+    assert_eq!(split_ref("Hello World!"), & ["Hello", "World!"]);
+    assert_eq!(split_ref("Hello World!"), vec!["Hello", "World!"]);
+}
+
 // split_clone must have the return type Vec<String>
+fn split_clone(input: &str) -> Vec<String> {
+    input.split(" ")
+        .map(|x| x.to_string())
+        .collect()
+}
 
-// #[test]
-// fn test_split_ref(){
-//     let string = "Hello World!".to_string();
-//     assert_eq!(split_ref(& string), ["Hello", "World!"]);
-//     assert_eq!(split_ref("Hello World!"), & ["Hello", "World!"]);
-//     assert_eq!(split_ref("Hello World!"), vec!["Hello", "World!"]);
-// }
-
-// #[test]
-// fn test_split_clone(){
-//     let string = "Hello World!".to_string();
-//     assert_eq!(split_clone(& string), ["Hello", "World!"]);
-//     assert_eq!(split_clone("Hello World!"), & ["Hello", "World!"]);
-//     assert_eq!(split_clone("Hello World!"), vec!["Hello", "World!"]);
-// }
+#[test]
+fn test_split_clone(){
+    let string = "Hello World!".to_string();
+    assert_eq!(split_clone(& string), ["Hello", "World!"]);
+    assert_eq!(split_clone("Hello World!"), & ["Hello", "World!"]);
+    assert_eq!(split_clone("Hello World!"), vec!["Hello", "World!"]);
+}
 
 /*
     Problem 2: Longest string
@@ -49,13 +58,22 @@ use std::io::Read;
     Return a new String (we will see later how to return a &str.)
 */
 
-// #[test]
-// fn test_pick_longest {
-//     assert_eq!(
-//         pick_longest(& "cat".to_string(), & "dog".to_string()),
-//         "cat".to_string()
-//     );
-// }
+fn pick_longest(x1: &str, x2: &str) -> String {
+    if x1.len() >= x2.len() {
+        x1.to_string()
+    }
+    else {
+        x2.to_string()
+    }
+}
+
+#[test]
+fn test_pick_longest(){
+    assert_eq!(
+        pick_longest(& "cat".to_string(), & "dog".to_string()),
+        "cat".to_string()
+    );
+}
 
 // Question 1:
 // For the curious, attempt to return reference, that is:
@@ -64,6 +82,20 @@ use std::io::Read;
 //
 // What goes wrong when you try to implement this function? Why is this
 // the case?
+
+// 该方法实现如下所示
+// fn pick_longest<'a>(x1: &'a str, x2: &'a str) -> &'a str {
+//     if x1.len() >= x2.len() {
+//         &(x1.to_string())
+//     }
+//     else {
+//         &(x2.to_string())
+//     }
+// }
+// 因为要返回的字符串是在方法内创建的，是一个临时变量，该字符串的生命周期只在本方法内。
+// 在逻辑离开本方法时，该字符串就被销毁了。
+// 它的指针也就销毁了。
+// Because cannot return reference to temporary value.
 
 /*
     Problem 3: File to string
@@ -78,9 +110,21 @@ use std::io::Read;
     You can use .expect("ignoring error: ") to ignore the Result<...> type in open()
     and read_to_string. We will discuss error handling later.
 */
-
 pub fn file_to_string(path: &str) -> String {
-    unimplemented!()
+    let mut f = File::open(path).expect("ignoring error: ");
+    let mut buffer = String::new();
+
+    f.read_to_string(&mut buffer).expect("ignoring error: ");
+    buffer
+}
+#[test]
+fn test_file_to_string() {
+    assert_eq!("Hello world!\r\nHello rust!", file_to_string("./src/part2_test.txt"));
+}
+#[test]
+#[should_panic(expected = "ignoring error:")]
+fn test_file_to_string_err() {
+    file_to_string("part2_test");
 }
 
 /*
@@ -91,15 +135,23 @@ pub fn file_to_string(path: &str) -> String {
     do NOT change the return type.
 */
 
+// 原方法为
+// pub fn add1(mut x : i32) -> () {
+//     x += 1;
+// }
+// 测试结果是x并没有+1成功。
+// 原因是：x 到了方法中被复制了一个新的，+1的也是这个新的变量，而该方法结束后，x就被销毁了
+// 所以，在调用完该方法后，再使用 x，还是调用的外边的 x，所以还是1
+
 #[test]
 fn test_add1() {
-    let mut x = 1;
-    add1(x);
+    let mut x: i32 = 1;
+    add1(&mut x);
     assert_eq!(x, 2);
 }
 
-pub fn add1(mut x : i32) -> () {
-    x += 1;
+pub fn add1(x : &mut i32) -> () {
+    *x += 1;
 }
 
 /*
@@ -108,11 +160,15 @@ pub fn add1(mut x : i32) -> () {
     The error says: cannot assign to immutable borrowed content `*str1`
     But we declared it mutable? Fix by changing only the line below.
 */
-// pub fn mut2() {
-//     let hello = String::from("hello");
-//
-//     // CHANGE ONLY THIS LINE:
-//     let mut str1: &String = &String::from("str1");
-//
-//     *str1 = hello;
-// }
+
+pub fn mut2() {
+    let hello = String::from("hello");
+
+    // CHANGE ONLY THIS LINE:
+    // let mut str1: &String = &String::from("str1");
+    // 旧写法是定义了一个可变的指针，该指针指向的String是不可变的，所以没有什么用
+    // 我们应该定义它指向一个可以变的String
+    let str1: &mut String = &mut String::from("str1");
+
+    *str1 = hello;
+}
