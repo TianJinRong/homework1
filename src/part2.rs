@@ -37,7 +37,7 @@ fn test_split_ref(){
 
 // split_clone must have the return type Vec<String>
 fn split_clone(input: &str) -> Vec<String> {
-    input.split(" ")
+    input.split(' ')
         .map(|x| x.to_string())
         .collect()
 }
