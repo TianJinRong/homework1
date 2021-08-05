@@ -398,5 +398,31 @@ fn merge_maps(
     merged: &mut HashMap<String, String>,
     add: HashMap<String,String>
 ) {
-    unimplemented!()
+    for (key, val) in add.iter() {
+        merged.entry(key.clone())
+            .and_modify(|old| old.push_str(val))
+            .or_insert(val.clone());
+    }
+}
+
+#[test]
+fn test_merge_maps() {
+    let mut merged: HashMap<String, String> = HashMap::new();
+    merged.insert(String::from("a"), String::from("apple"));
+    merged.insert(String::from("b"), String::from("banana"));
+    merged.insert(String::from("c"), String::from("cat"));
+
+    let mut add: HashMap<String, String> = HashMap::new();
+    add.insert(String::from("b"), String::from("book"));
+    add.insert(String::from("a"), String::from("abc"));
+    add.insert(String::from("d"), String::from("dog"));
+
+    let mut expected: HashMap<String, String> = HashMap::new();
+    expected.insert(String::from("a"), String::from("appleabc"));
+    expected.insert(String::from("b"), String::from("bananabook"));
+    expected.insert(String::from("c"), String::from("cat"));
+    expected.insert(String::from("d"), String::from("dog"));
+
+    merge_maps(&mut merged, add);
+    assert_eq!(expected, merged);
 }
